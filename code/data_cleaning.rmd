@@ -1,0 +1,20 @@
+```
+library(tidyverse)
+library(readxl)
+library(lubridate)
+library(ggplot2)
+
+pre = "/Users/patrickokwir/Desktop/Lighthouse-data-notes/Jack-Talk-Surveys/datasets/CASE STUDY - Livestream pre FY23.csv"
+post = "/Users/patrickokwir/Desktop/Lighthouse-data-notes/Jack-Talk-Surveys/datasets/CASE STUDY - Livestream post FY23.csv"
+
+# load df from csv file
+library(readr)
+
+df_pre <- read.csv(pre, header = TRUE, sep = ",")
+df_post <- read.csv(post, header = TRUE, sep = ",")
+
+# check head of df
+head(df_post)
+```
+
+
