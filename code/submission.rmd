@@ -22,6 +22,28 @@ if (requireNamespace("thematic"))
 ---
 <br>
 
+## Requirements 
+<br>
+
+To effectively reproduce the process, the following packages are required to be installed in R:\
+- [tidyverse](https://www.r-lib.org/packages/tidyverse
+- [dplyr](https://www.r-lib.org/packages/dplyr
+- [ggplot2](https://www.r-lib.org/packages/gg
+- [lubridate](https://www.r-lib.org/packages/
+- [readxl](https://www.r-lib.org/packages/readxl
+- [stringr](https://www.r-lib.org/packages/stringr
+- [knitr](https://www.r-lib.org/packages/knitr
+- [rmarkdown](https://www.r-lib.org/packages/rmarkdown
+
+If you are working in visual studio code, you need to install the following extensions:\
+- [Language Server](https://marketplace.visualstudio.com/items?itemName=VisualStudioExptTeam.RLanguageServer)
+- [R Lang](https://marketplace.visualstudio.com/items?itemName=Ikuyadeu.r)
+
+If you are working in visual studio code and want to use the jupyter notebook version of the codebook, you need to install the following extensions:\
+- [R Kernel Notebook](https://marketplace.visualstudio.com/items?itemName=IRkernel.irkernel)
+- [Jupyter Notebook](https://marketplace.visualstudio.com/items?itemName=mshr-h.VerilogHDL) 
+
+
 ## Introduction 
 The evaluation lead case study is a skills assessment project used to measure candidate's skill levels in: -\
 - quantitative and qualitative data collection and analysis, with an emphasis on quantitative skills,\ 
@@ -46,12 +68,15 @@ The data for this project is available in the [data]() folder. The data is in th
 ## Process
 The process for this project is as follows:\
 - Read the data into R\
-- Clean the data\
+- Clean each individual dataset seperately\
+- Combine cleaned datasets into a single dataset\
 - Analyze the data\
 - Report the findings
 
 The granular steps for each of these processes are given in the instructions provided to candidates. These are also available in the `instructions` folder.
-The codebook also contains annotations for each step in the process. The codebook is available in the `code` folder.
+The codebook contains all steps and processes taken, it also contains annotations for each step in the process. Codes are written in R, docstrings are included for easy following.
+
+
 <br>
 
 ## Deliverables
@@ -73,51 +98,70 @@ The process followed for cleaning the data to conform to the seven dimensions of
 - Consistency - The data is consistent. The data conforms to the values specified in the instructions.
 - Relevance - The data is relevant. The data meets the standards required for the analysis.
 
-#### 1.1 Checking and removing incomplete records from the data set
-```{r set_stage, echo = TRUE, eval = TRUE, message = FALSE, warning = FALSE}
-# setting the stage
-# data paths 
-pre <- "/Users/patrickokwir/Desktop/Lighthouse-data-notes/Jack-Talk-Surveys/datasets/CASE STUDY - Livestream pre FY23.csv"
-post <- "/Users/patrickokwir/Desktop/Lighthouse-data-notes/Jack-Talk-Surveys/datasets/CASE STUDY - Livestream post FY23.csv"
+#### 1.1 Asserting test for completeness, uniqueness, timeliness, and relevance. 
+Quality checks were systematically conducted and data was cleansed in a stepwise manner. 
+As I progressed through the steps, I noticed a reduction in the number of quality violations. 
+This observation suggests that the preceding steps effectively addressed most of the violations.
+The cleaned datasets were exported to csvs that can be found in the [data_output]() folder. 
+The results are depicted in the table below. 
 
-# reading the data
-library(readr)
-df_pre <- read.csv(pre, header = TRUE, sep = ",")
-df_post <- read.csv(post, header = TRUE, sep = ",")
 
-# return rows where finished = False
-incomplete <- (df_pre[df_pre$Finished == FALSE, ])
+| Quality Dimension | Definition | Pre Surveys | Post Surveys |
+|-------------------|------------|-------------|--------------|
+| Completeness      | Degree to which all records have data populated when expected. | There were 2878 marked as ‘incomplete,’ and an additional 582 responses with at least one ‘blank’ or ‘NA’ value in the subset columns (Q1 - Q4). | There were 3040 marked as ‘incomplete,’ and an additional 298 responses with at least one ‘blank’ or ‘NA’ value in the subset columns (Q1 - Q8). |
+| Uniqueness        | Degree to which the records in a dataset are not duplicated. | There were 4 duplicate records. That is a 0.05% duplication rate. | There was only one duplicate record. This represents a 0.06% duplication rate. |
+| Timeliness        | Degree to which the data is up to date. | Survey time period was between 2022-09-21 13:14:00 and 2023-06-25 15:19:00. This is timely. | Survey time period was between 2022-09-21 13:55:00 and 2023-06-25 15:20:00. This is timely. |
+| Relevance         | Degree to which the data is suitable for analysis required. | The data is suitable for the analysis required. | The data is suitable for the analysis required. |
 
-# remove incomplete records from the data set
-# Remove rows where the user did not finish the survey
-df_pre <- df_pre[df_pre$Finished != FALSE, ]
-count_false_finished <- nrow(df_pre[df_pre$Finished == FALSE, ])
-count_true_finished <- nrow(df_pre[df_pre$Finished != FALSE, ])
+<br>
+**Observations**
+<br>
 
-cat("Number of incomplete records: ", nrow(incomplete), "\n")
-cat(count_true_finished, "responses are marked as finished.")
+- After filtering out incomplete responses, the dataset consisted of 7,465 completed responses, indicating a completion rate of 68.3%. 
+The pre-survey dataset contained a total of 10,925 records. 
+- The post survey contained a total of 6,856 records. After removing incomplete responses, the dataset comprised 3,518 valid responses, signifying a completion rate of 55.7%.\
+A visual depiction can be seen below.
+<br>
+![image.png](/Users/patrickokwir/Desktop/Lighthouse-data-notes/Jack-Talk-Surveys/assets/pre_post_rate.png)
 
+#### 1.2 Merging and exerting tests for validity, accuracy, and consistency.
+The two datasets were merged for each same respondent using the `id` columns.
+The validity, accuracy, and consistency tests were systematically conducted. Data was cleaned using appropiate methods to ensure complaince. The outcome of the tests followed almost a simmilar pattern from the previous step.  
+The results are depicted in the table below.
+
+
+| Quality Dimension | Definition | Result |
+|-------------------|------------|--------|
+| Validity | Degree to which the records in a dataset are valid. | The quality assertion here is that post survey cannot be taken before the pre survey. There are at least 262 matching surveys where post-survey was taken before the pre survey by at least 1 day. |
+| Accuracy | Degree to which the data is correct and represents the truth. | The assumption is that the data is correct and represents the truth. Further domain knowledge is required to validate accuracy. |
+| Consistency | A threshold for how much difference there can be between two datasets. | There was a total of 6,978 records after merging, with only 2,606 matching records. 4,372 records failed this test. |
+
+**Observations**
+<br>
+
+- A minimum of 262 instances of matching surveys have been observed, in which the post-survey responses were recorded prior to the pre-survey responses by a margin of at least one day. These were removed from the final dataset before analysis of Q6. 
+```yaml
+|   RecordedDate.y(post) |  RecordedDate.x (pre) | Matched |    id      |
+|------------------------|-----------------------|---------|------------|
+| 2023-03-07 16:20:00    | 2023-05-15 14:05:00   | matched |  A_A_01_A  |
+| 2023-05-24 10:26:00    | 2023-05-30 08:53:00   | matched |  A_A_04_B  |
+| 2023-03-07 16:21:00    | 2023-05-03 15:22:00   | matched |  A_A_04_M  |
+| 2023-04-24 17:01:00    | 2023-05-18 10:39:00   | matched |  A_A_04_P  |
+| 2023-05-04 13:13:00    | 2023-05-18 10:37:00   | matched |  A_A_07_8  |
+| 2023-05-18 11:19:00    | 2023-05-25 08:58:00   | matched |  A_A_07_R  |
+| 2023-02-13 14:58:00    | 2023-05-15 14:05:00   | matched |  A_A_07_S  |
+| 2023-05-03 12:55:00    | 2023-05-30 09:28:00   | matched |  A_A_11_H  |
+| 2023-04-24 17:02:00    | 2023-05-24 10:55:00   | matched |  A_A_12_A  |
+| 2023-05-24 08:39:00    | 2023-05-26 10:17:00   | matched |  A_A_12_F  |
+
+There are 262 row(s) where the post survey date is before the pre-survey date with a difference of more than 1 day.
 ```
-There are 8047 datapoints indicated as complete, there are still responses indicated as 'finished' that are not complete.\
-From here, removed all incomplete datapoints.
+- The pre-post matching rate stood at 41%, denoting that 2,606 matches were identified between the pre-survey dataset (3,226 records) and the post-survey dataset (6,358 records).
+A visual depiction can be seen below.
 
-```{r df_pre, echo = TRUE, eval = TRUE, message = FALSE, warning = FALSE}
-library(dplyr)
+![](/Users/patrickokwir/Desktop/Lighthouse-data-notes/Jack-Talk-Surveys/assets/pre-post-match.png)
 
-# Filter rows where at least one of the specified columns is blank
-blank_rows <- df_pre %>%
-  filter(Q1_a == "" |
-         Q2_a == "" |
-         Q3_a == "" |
-         Q4_a == "" |
-         id == "")
-#count rows
-count_blank_rows <- nrow(blank_rows)
-cat("There are: ", count_blank_rows, " observations with atleast one blank coloumn value in the dataset")
 
-```
-
-### ggplot2
 
 ```{r}
 library(ggplot2)
