@@ -1,20 +1,894 @@
+---
+title: An R Markdown document for data cleaning
+output: html_document
+---
+
+# Data Cleaning
+---
+
+# 1. Setting the stage
+Load the datasets. 
+
+```{r}
+#Data paths. Replace with your file paths. 
+
+pre <- "/datasets/CASE STUDY - Livestream pre FY23.csv" #nolint
+post <- "/datasets/CASE STUDY - Livestream post FY23.csv" #nolint
 ```
-library(tidyverse)
-library(readxl)
-library(lubridate)
-library(ggplot2)
 
-pre = "/Users/patrickokwir/Desktop/Lighthouse-data-notes/Jack-Talk-Surveys/datasets/CASE STUDY - Livestream pre FY23.csv"
-post = "/Users/patrickokwir/Desktop/Lighthouse-data-notes/Jack-Talk-Surveys/datasets/CASE STUDY - Livestream post FY23.csv"
-
-# load df from csv file
+```{r}
+# create df_pre and df_post
 library(readr)
 
-df_pre <- read.csv(pre, header = TRUE, sep = ",")
-df_post <- read.csv(post, header = TRUE, sep = ",")
-
-# check head of df
-head(df_post)
+data_pre <- read.csv(pre, header = TRUE, sep = ",")
+data_post <- read.csv(post, header = TRUE, sep = ",")
 ```
 
+```{r}
+#create a copy of the original dataframe
+library(dplyr)
+
+# copy the original dataframe
+df_pre <- data.frame(data_pre)
+df_post <- data.frame(data_post)
+```
+
+# 2. The pre surveys cleaning 
+
+```{r}
+#check the first 5 rows of the dataset and total number of responses
+head(df_pre)
+total_responses <- nrow(df_pre)
+cat("There are", total_responses, "responses in the dataset.")
+```
+
+From this point on, I follow the seven dimensions of data quality for both datasets
+- **Completeness.** Completeness measures the degree to which all expected records in a dataset
+are present. At a data element level, completeness is the degree to which all
+records have data populated when expected.
+- **Uniqueness.** Uniqueness measures the degree to which the records in a dataset are not
+duplicated.
+- **Timeliness.** Timeliness measures the degree to which the data in a data is up to date.
+- **Validity.** Validity measures the degree to which the records in a dataset are valid.
+- **Accuracy.** Accuracy measures the degree to which data is correct and represents the truth.
+- **Consistency.** Consistency is a data quality dimension that measures the degree to which
+data is the same across all instances of the data. Consistency can be
+measured by setting a threshold for how much difference there can be
+between two datasets. In this case, that would be the pre and post survey matching rate. 
+- **Relevance.** Relevance is a data quality dimension that measures the degree to which the data is suitable for analysis required. 
+
+**Step 1: Completeness: Remove incomplete responses, keep only completed responses from participants.**
+
+```{r}
+# use column "Finished to determine if the record is complete or not"
+#return rows where finished = False and check the structure of the data
+incomplete <- (df_pre[df_pre$Finished == FALSE, ])
+cat("Number of incomplete records: ", nrow(incomplete), "\n")
+```
+
+```{r}
+# Remove incomplete responses from df_pre. These are rows where column 'Finished' = False. # nolint
+# remove rows from df_pre where column Finished = False
+# count rows where column Finished = False
+count_false_finished <- sum(df_pre$Finished == FALSE)
+cat("There are:", count_false_finished, "incomplete responses in df_pre. These will be removed from the dataframe. \n") # nolint
+```
+
+```{r}
+# Remove rows where the user did not finish the survey
+df_pre <- df_pre[df_pre$Finished != FALSE, ]
+count_false_finished <- nrow(df_pre[df_pre$Finished == FALSE, ])
+count_true_finished <- nrow(df_pre[df_pre$Finished != FALSE, ])
+
+cat(count_false_finished, "responses are not marked as finished.")
+cat(count_true_finished, "responses are marked as finished.")
+```
+
+`There are 8047 datapoints indicated as complete. Check if there are datapoints indicated as 'finished' that are not complete/ has missing values. In practice, some missing values can be imputed, but as per the instructions, I will remove those from the dataset.`
+
+```{r}
+#check for any blank or NA values in 'Q1_a'...'id' columns
+
+library(dplyr)
+
+# Filter rows where at least one of the columns 'Q1_a'...'id' is blank or NA
+
+# function to do the filtering
+filter_blank_rows <- function(input_df) {
+  blank_rows <- input_df[
+    is.na(input_df$Q1_a) | input_df$Q1_a == "" | #nolint
+    is.na(input_df$Q2_a) | input_df$Q2_a == "" | #nolint
+    is.na(input_df$Q3_a) | input_df$Q3_a == "" |
+    is.na(input_df$Q4_a) | input_df$Q4_a == "" |
+    is.na(input_df$id)   | input_df$id == "", ]
+  
+  return(blank_rows)
+}
+
+# Return rows for the selected subset. specified columns are not blank
+blank_rows <- filter_blank_rows(df_pre)
+#count rows
+count_blank_rows <- nrow(blank_rows)
+cat("There are: ", count_blank_rows, "responses where any of the subset columns contains a blank or NA value") #nolint
+```
+
+```{r}
+# remove the rows with missing and NA values from the dataset
+# the complete.cases() function returns a logical vector indicating which cases are complete.\ #nolint
+#THIS IS THE KEY FUNCTION FOR THIS STEP but seem not to get the job done.
+```
+
+```{r}
+# remove the rows with missing and NA values from the dataset
+# function to remove blank and NA rows
+remove_blank_rows <- function(input_df) {
+  non_blank_rows <- input_df[
+    !(is.na(input_df$Q1_a) | input_df$Q1_a == "" | #nolint
+      is.na(input_df$Q2_a) | input_df$Q2_a == "" | #nolint
+      is.na(input_df$Q3_a) | input_df$Q3_a == "" |
+      is.na(input_df$Q4_a) | input_df$Q4_a == "" |
+      is.na(input_df$id)   | input_df$id == ""), ]
+  
+  return(non_blank_rows)
+}
+
+df_pre <- remove_blank_rows(df_pre)
+#check the structure and count of complete responses in df_pre
+head(df_pre)
+cat("Number of complete responses:", nrow(df_pre))
+```
+
+```{r}
+# Quality Control for completeness
+# 1. Check is finished column is all TRUE
+incomplete <- (df_pre[df_pre$Finished == FALSE, ])
+cat("Number of incomplete records: ", nrow(incomplete), "\n")
+
+# 2. check subset of columns for missing values
+# Filter rows where at least one of the columns 'Q1_a'...'id' is blank or NA. Here I used the funtion 'filter_blank_rows' from above. 
+blank_rows <- filter_blank_rows(df_pre)
+#count rows
+count_blank_rows <- nrow(blank_rows)
+cat("There are: ", count_blank_rows, "responses where any of the subset columns contains a blank or NA value") #nolint
+```
+
+```{r}
+# calculate completion rate
+
+df_1 <- data.frame(data_pre)
+incomplete <- (df_1[df_1$Finished == FALSE, ])
+df_1 <- df_1[df_1$Finished == TRUE, ]
+blank_or_na_rows <- filter_blank_rows(df_1)
+completion_rate <- (nrow(blank_or_na_rows) + nrow(incomplete))/nrow(data_pre)
+
+cat("Pre surveys had", (1-completion_rate)*100, "% completion rate.\n")
+```
+
+```{r}
+# plot completion rate
+
+library(ggplot2)
+library(dplyr)
+# Calculate the complete rate and round it to one decimal place
+complete <- round((1 - completion_rate) * 100, 1)
+# data
+df <- data.frame(
+  group = c("Complete", " "),
+  value = c(complete, 100 - complete)
+)
+
+# Small hole
+hsize <- 1
+
+df <- df %>% 
+  mutate(x = hsize)
+
+ggplot(df, aes(x = x, y = value, fill = group)) +
+  geom_col() +
+  geom_text(aes(label = paste0(value, "%")), position = position_stack(vjust = 0.5), color = "#ffffff") +
+  geom_text(aes(label = group, x = hsize -0.2), color = "white", size = 4, hjust = -2.5) +
+  coord_polar(theta = "y") +
+  xlim(c(0.2, hsize + 0.5)) +
+  scale_fill_manual(values = c("Complete" = "#0cb9f8", " " = "#ee7503")) +
+  theme_void() +
+  theme(legend.position = "none",
+        plot.background = element_rect(fill = "#050022"),
+        panel.background = element_rect(fill = "#050022"),
+        plot.margin = unit(c(1, 1, 1, 1), "cm"),
+        axis.text = element_blank(),
+        axis.title = element_blank(),
+        axis.ticks = element_blank(),
+        plot.title = element_text(color = "white", size = 17, lineheight = 5, vjust = -2, hjust = 0.5))+
+        labs(title = "Pre Survey Completion Rate")
+        #+ ggsave("/assets/pre_completion_rate.png", width = 8, height = 6, units = "in")
+```
+
+Step 2: - **Uniqueness.** Uniqueness measures the degree to which the records in a dataset are not duplicated.
+
+```{r}
+#1. First we check if there are duplicates in the data. 
+all_duplicates <- df_pre[duplicated(df_pre) | duplicated(df_pre, fromLast = TRUE), ]
+
+# Print the all duplicate rows
+all_duplicates
+```
+
+```{r}
+# duplication rate
+total_rows <- nrow(df_pre)
+duplicated_rows <- sum(duplicated(df_pre) | duplicated(df_pre, fromLast = TRUE))
+
+duplication_rate <- duplicated_rows / total_rows
+
+# Print the duplication rate
+cat("Duplication Rate:", duplication_rate * 100, "%")
+```
+
+```{r}
+#remove duplicates, Keep only most recent records. 
+
+library(dplyr)
+library(lubridate)
+
+# I'm using lubridate to convert the RecordedDate column to a date object
+
+remove_duplicates_keep_most_recent <- function(input_df, id_col, date_col) { #nolint
+  # This function removes duplicates from a dataframe, keeping only the most recent record #nolint
+  unique_df <- input_df %>%
+    mutate(!!sym(date_col) := ymd_hm(!!sym(date_col))) %>% #nolint
+    arrange(!!sym(id_col), desc(!!sym(date_col))) %>%
+    distinct(!!sym(id_col), .keep_all = TRUE)
+  #nolint
+  return(unique_df)
+}
+
+df_pre <- remove_duplicates_keep_most_recent(df_pre, id_col = "id", date_col = "RecordedDate") #nolint
+
+# Qc check for duplicates
+all_duplicates <- df_pre[duplicated(df_pre) | duplicated(df_pre, fromLast = TRUE), ] #nolint
+
+# Print the all duplicate rows
+cat("There are", nrow(all_duplicates), "duplicates in the dataset")
+```
+
+**Step 3:**
+- **Timeliness.** Timeliness measures the degree to which the data in a data is up to date.
+- **Validity.** Validity measures the degree to which the records in a dataset are valid.
+
+- `The instructions on the assignment didn't include timeliness. The assumption here is that the data is from the same time period.`
+- `For validity, this will be checked upon merging with the post survey data. Because the instructions say to keep the most recent response from the merged df. The assumption is that the most recent response is the most valid. Its not logical to assert a validity test at this point before merging.`
+
+```{r}
+#check for start and end date of survey
+start_date <- min(df_pre$RecordedDate)
+end_date <- max(df_pre$RecordedDate)
+
+# Convert epoch timestamps to human-readable time since they are in UTC in the previous step #nolint
+start_date_human <- as.POSIXct(start_date, origin = "1970-01-01", tz = "UTC")
+end_date_human <- as.POSIXct(end_date, origin = "1970-01-01", tz = "UTC")
+
+# Print the time period
+cat("Survey Time Period:", format(start_date_human, "%Y-%m-%d %H:%M:%S"), "to", format(end_date_human, "%Y-%m-%d %H:%M:%S")) #nolint
+```
+
+**Step 4:** 
+- **Accuracy.** Accuracy measures the degree to which data is correct and represents the truth.
+- **Consistency.** Consistency is a data quality dimension that measures the degree to which
+data is the same across all instances of the data. Consistency can be
+measured by setting a threshold for how much difference there can be
+between two datasets. In this case, that would be the pre and post survey matching rate. 
+- **Relevance.** Relevance is a data quality dimension that measures the degree to which the data is suitable for analysis required. 
+
+
+__Verdict__
+- **Accuracy.** The assumption is that the data is correct and represents the truth. Further domain knowledge is required to validate accuracy.
+- **Consistency.** This will be tested by comparing the pre and post survey matching rate.
+- **Relevance.** The data is suitable for the analysis required.
+
+```{r}
+# Export df_pre to a CSV file
+# write.csv(df_pre, "data_output/df_pre.csv", row.names = FALSE)
+```
+
+# 3. The post surveys cleaning
+
+```{r}
+#check the first 5 rows of the dataset and total number of responses
+head(df_post, 5)
+total_responses <- nrow(df_post)
+cat("There are", total_responses, "responses in the dataset.")
+```
+
+**Step 1: Completeness: Remove incomplete responses, keep only completed responses from participants.**
+
+```{r}
+# use column "Finished to determine if the record is complete or not"
+#return rows where finished = False and check the structure of the data
+incomplete <- (df_post[df_post$Finished == FALSE, ])
+cat("Number of incomplete records: ", nrow(incomplete), "\n")
+```
+
+```{r}
+# Remove incomplete responses from df_post. These are rows where column 'Finished' = False. # nolint
+# remove rows from df_pre where column Finished = False
+# count rows where column Finished = False
+count_false_finished <- sum(df_post$Finished == FALSE)
+cat("There are:", count_false_finished, "incomplete responses in df_post. These will be removed from the dataframe. \n") # nolint
+```
+
+```{r}
+# Remove rows where the user did not finish the survey
+
+#function to check if the user finished the survey and removes rows where the user did not finish the survey, returns a dataframe with only finished responses
+check_finished_responses <- function(input_df) {
+  input_df <- input_df[input_df$Finished != FALSE, ]
+  count_false_finished <- nrow(input_df[input_df$Finished == FALSE, ])
+  count_true_finished <- nrow(input_df[input_df$Finished != FALSE, ])
+
+  return(input_df)
+  return(cat(count_false_finished, "responses are not marked as finished.\n"))
+  return(cat(count_true_finished, "responses are marked as finished.\n"))
+}
+
+# call function to remove rows where the user did not finish the survey
+df_post <- check_finished_responses(df_post)
+head(df_post)
+cat(nrow(df_post), "responses are marked as finished.\n")
+```
+
+```{r}
+#check for any blank or NA values in 'Q1_b'...'id' columns
+
+library(dplyr)
+
+# Filter rows where at least one of the columns 'Q1_b'...'id' is blank or NA
+
+# function to do the filtering
+filter_blank_rows <- function(input_df) {
+  blank_rows <- input_df[
+                        is.na(input_df$Q1_b) | input_df$Q1_b == "" |
+                        is.na(input_df$Q2_b) | input_df$Q2_b == "" |
+                        is.na(input_df$Q3_b) | input_df$Q3_b == "" |
+                        is.na(input_df$Q4_b) | input_df$Q4_b == "" |
+                        is.na(input_df$Q5) | input_df$Q5 == "" |
+                        is.na(input_df$Q6) | input_df$Q6 == "" |
+                        is.na(input_df$Q7) | input_df$Q7 == "" |
+                        is.na(input_df$Q8) | input_df$Q8 == "" |
+                        is.na(input_df$id)   | input_df$id == "", ]
+  
+  return(blank_rows)
+}
+
+# Return rows for the selected subset. specified columns are not blank
+blank_rows <- filter_blank_rows(df_post)
+#count rows
+count_blank_rows <- nrow(blank_rows)
+cat("There are: ", count_blank_rows, "responses where any of the subset columns contains a blank or NA value") #nolint
+```
+
+```{r}
+# remove the rows with missing and NA values from the dataset
+# function to remove blank and NA rows
+remove_blank_rows <- function(input_df) {
+  non_blank_rows <- input_df[
+                      !(is.na(input_df$Q1_b) | input_df$Q1_b == "" | #nolint
+                        is.na(input_df$Q2_b) | input_df$Q2_b == "" | #nolint
+                        is.na(input_df$Q3_b) | input_df$Q3_b == "" |
+                        is.na(input_df$Q4_b) | input_df$Q4_b == "" |
+                        is.na(input_df$Q5) | input_df$Q5 == "" |
+                        is.na(input_df$Q6) | input_df$Q6 == "" |
+                        is.na(input_df$Q7) | input_df$Q7 == "" |
+                        is.na(input_df$Q8) | input_df$Q8 == "" |
+                        is.na(input_df$id)   | input_df$id == ""), ]
+  return(non_blank_rows)
+}
+
+df_post <- remove_blank_rows(df_post)
+#check the structure and count of complete responses in df_pre
+head(df_post)
+cat("Number of complete responses:", nrow(df_post))
+```
+
+```{r}
+# Quality Control for completeness
+# 1. Check is finished column is all TRUE
+incomplete <- (df_post[df_post$Finished == FALSE, ])
+cat("Number of incomplete records: ", nrow(incomplete), "\n")
+
+# 2. check subset of columns for missing values
+# Filter rows where at least one of the columns 'Q1_b'...'id' is blank or NA. Here I used the funtion 'filter_blank_rows' from above. 
+blank_rows <- filter_blank_rows(df_post)
+#count rows
+count_blank_rows <- nrow(blank_rows)
+cat("There are: ", count_blank_rows, "responses where any of the subset columns contains a blank or NA value") #nolint
+```
+
+```{r}
+# calculate completion rate
+
+df_1 <- data.frame(data_post)
+incomplete <- (df_1[df_1$Finished == FALSE, ]) # incomplete surveys
+df_1 <- df_1[df_1$Finished == TRUE, ] # filter out incomplete surveys
+blank_or_na_rows <- filter_blank_rows(df_1) # filter out blank rows from function before
+completion_rate <- (nrow(blank_or_na_rows) + nrow(incomplete))/nrow(data_post)
+
+cat("Post surveys had", (1-completion_rate)*100, "% completion rate.\n")
+```
+
+```{r}
+# plot completion rate
+
+library(ggplot2)
+library(dplyr)
+# Calculate the complete rate and round it to one decimal place
+complete <- round((1 - completion_rate) * 100, 1)
+# data
+df <- data.frame(
+  group = c("Complete", " "),
+  value = c(complete, 100 - complete)
+)
+
+# Small hole
+hsize <- 1
+
+df <- df %>% 
+  mutate(x = hsize)
+
+ggplot(df, aes(x = x, y = value, fill = group)) +
+  geom_col() +
+  geom_text(aes(label = paste0(value, "%")), position = position_stack(vjust = 0.5), color = "#ffffff") +
+  geom_text(aes(label = group, x = hsize -0.68), color = "white", size = 4, hjust = -1.5) +
+  coord_polar(theta = "y") +
+  xlim(c(0.2, hsize + 0.5)) +
+  scale_fill_manual(values = c("Complete" = "#0cb9f8", " " = "#ee7503")) +
+  theme_void() +
+  theme(legend.position = "none",
+        plot.background = element_rect(fill = "#050022"),
+        plot.margin = unit(c(1, 1, 1, 1), "cm"),
+        panel.background = element_rect(fill = "#050022"),
+        axis.text = element_blank(),
+        axis.title = element_blank(),
+        axis.ticks = element_blank(), 
+        plot.title = element_text(color = "white", size = 17, lineheight = 5, vjust = -2, hjust = 0.5))+
+        labs(title = "Post Survey Completion Rate")
+        #  + ggsave("/assets/post_completion_rate.png", width = 8, height = 6, units = "in")
+
+```
+
+Step 2: - **Uniqueness.** Uniqueness measures the degree to which the records in a dataset are not duplicated.
+
+```{r}
+#1. First we check if there are duplicates in the data. 
+all_duplicates <- df_post[duplicated(df_post) | duplicated(df_post, fromLast = TRUE), ]
+
+# Print the all duplicate rows
+all_duplicates
+```
+
+```{r}
+# duplication rate
+total_rows <- nrow(df_post)
+duplicated_rows <- sum(duplicated(df_post) | duplicated(df_post, fromLast = TRUE))
+
+duplication_rate <- duplicated_rows / total_rows
+
+# Print the duplication rate
+cat("Duplication Rate:", duplication_rate * 100, "%")
+```
+
+```{r}
+#remove duplicates, Keep only most recent records.
+# I'm using a function 'remove_duplicates_keep_most_recent' defined before.  
+
+df_post <- remove_duplicates_keep_most_recent(df_post, "id", "RecordedDate")
+
+# Qc check for duplicates 
+all_duplicates <- df_post[duplicated(df_post) | duplicated(df_post, fromLast = TRUE), ]
+
+# Print the all duplicate rows
+cat("There are", nrow(all_duplicates), "duplicates in the dataset")
+```
+
+**Step 3:**
+- **Timeliness.** Timeliness measures the degree to which the data in a data is up to date.
+- **Validity.** Validity measures the degree to which the records in a dataset are valid.
+
+- `The instructions on the assignment didn't include timeliness. The assumption here is that the data is from the same time period.`
+- `For validity, this will be checked upon merging with the pre survey data. Because the instructions say to keep the most recent response from the merged df. The assumption is that the most recent response is the most valid. Its not logical to assert a validity test at this point before merging.`
+
+```{r}
+#check for start and end date of survey
+start_date <- min(df_post$RecordedDate)
+end_date <- max(df_post$RecordedDate)
+
+# Convert epoch timestamps to human-readable time since they are in UTC in the previous step #nolint
+start_date_human <- as.POSIXct(start_date, origin = "1970-01-01", tz = "UTC")
+end_date_human <- as.POSIXct(end_date, origin = "1970-01-01", tz = "UTC")
+
+# Print the time period
+cat("Survey Time Period:", format(start_date_human, "%Y-%m-%d %H:%M:%S"), "to", format(end_date_human, "%Y-%m-%d %H:%M:%S")) #nolint
+```
+
+**Step 4:** 
+- **Accuracy.** Accuracy measures the degree to which data is correct and represents the truth.
+- **Consistency.** Consistency is a data quality dimension that measures the degree to which
+data is the same across all instances of the data. Consistency can be
+measured by setting a threshold for how much difference there can be
+between two datasets. In this case, that would be the pre and post survey matching rate. 
+- **Relevance.** Relevance is a data quality dimension that measures the degree to which the data is suitable for analysis required. 
+
+
+__Verdict__
+- **Accuracy.** The assumption is that the data is correct and represents the truth. Further domain knowledge is required to validate accuracy.
+- **Consistency.** This will be tested by comparing the pre and pre survey matching rate.
+- **Relevance.** The data is suitable for the analysis required.
+
+```{r}
+# Export df_post to a CSV file. Replace with your own path
+write.csv(df_post, "/data_output/df_post.csv", row.names = FALSE)
+```
+
+# 4. Match any pre and post data from the same respondent using the provided IDs
+
+**Step 4.1 set the stage and explore the data**
+
+```{r}
+# check head for both pre and post
+head(df_pre)
+cat(nrow(df_pre))
+head(df_post)
+cat(nrow(df_post))
+```
+
+**Step 4.2: Merging the dataframes**
+
+```{r}
+# create a new column called 'Pre' on the df_pre dataframe and set to 'pre'
+df_pre$Pre <- 'pre'
+
+# create a new column called 'Post' on the df_post dataframe and set to 'post'
+df_post$Post <- 'post'
+```
+
+```{r}
+nrow(df_pre)
+nrow(df_post)
+```
+
+```{r}
+# merge two dataframes into one on the column 'id'
+merged_df <- merge(df_pre, df_post, by = 'id', all = TRUE)
+head(merged_df)
+```
+
+```{r}
+# create a new column called 'Matched' in the dataframe. Fill with matched where column 'Pre' = 'pre' and 'Post' = 'post'
+merged_df$Matched <- ifelse(merged_df$Pre == 'pre' & merged_df$Post == 'post', 'matched', '')
+
+nrow(merged_df)
+```
+
+```{r}
+library(dplyr)
+
+# Filter rows where 'Matched' column is 'matched'
+matched_rows <- merged_df %>%
+  filter(Matched == 'matched')
+
+head(matched_rows)
+cat("There are ", nrow(matched_rows), "macthing survery responses.")
+```
+
+```{r}
+#Quality Control
+#investigate matching criteria
+count_matched <- merged_df %>%
+  filter(Matched == 'matched') %>%
+  nrow()
+
+# Count the number of rows in the original df_pre
+count_df_pre <- nrow(df_pre)
+count_df_post <- nrow(df_post)
+
+# Print the counts
+cat("Number of 'matching' entries:", count_matched, "\n")
+cat("Number of rows in df_pre:", count_df_pre, "\n")
+cat("Number of rows in df_post:", count_df_post, "\n")
+```
+
+```{r}
+# plot the data
+# Load the necessary library
+library(ggplot2)
+
+# Sample data
+data_summary <- data.frame(
+  dataset = c("Matching Entries", "Pre", "Post"),
+  count = c(count_matched, count_df_pre, count_df_post)
+)
+
+ggplot(data_summary, aes(x = dataset, y = count, fill = dataset)) +
+  geom_col(width = 0.005, aes(color = factor(dataset))) + geom_point(aes(color = factor(dataset)), size =10) +
+  geom_text(aes(label = count), position = position_stack(vjust = 1.03), color = "white") +
+  scale_fill_manual(values = c("Matching Entries" = "#0cb9f8", "Pre" = "#04d6b3", "Post" = "#ee7503")) +
+  theme_minimal() +
+  theme(plot.background = element_rect(fill = "#050022"),plot.margin = unit(c(1, 1, 1, 1), "cm"),
+        panel.background = element_rect(fill = "#050022"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.line = element_line(color = "white"),
+        axis.line.y = element_blank(),
+        axis.line.x = element_blank(),
+        axis.text = element_text(color = "white"),
+        axis.title = element_blank(),
+        axis.ticks = element_blank(),
+        legend.position = "none",
+        axis.title.y = element_text(color = "white"), 
+        plot.title = element_text(color = "white", size = 17, lineheight = 5, vjust = -2, hjust = 0.5)) +
+  labs(title = "Pre-Post Matching Summary",
+       y = "Count") +
+  ylim(c(0, max(data_summary$count) + 200))
+  #+ ggsave("/assets/count_summary.png", width = 8, height = 6, units = "in")
+```
+
+```{r}
+# Quality control
+#Count the number of unique 'matched' entries in the 'Matched' column
+unique_matched_count <- merged_df %>%
+  filter(Matched == 'matched') %>%
+  distinct(id) %>%
+  nrow()
+
+# Print the unique matched count
+cat("Number of unique 'matched' entries:", unique_matched_count, "\n")
+```
+
+```{r}
+#check surveys that are matched but have post survey date before pre survey date. #nolint
+
+library(dplyr)
+library(lubridate)
+
+filtered_rows <- merged_df %>%
+  filter(
+    Matched == 'matched',
+    difftime(RecordedDate.x, RecordedDate.y, units = "day") > 1
+  ) %>%
+  select(RecordedDate.y, RecordedDate.x, Matched, id)
+
+# Print the first 5 rows
+print(head(filtered_rows, 10))
+
+cat("There are", nrow(filtered_rows), "row(s) where the post survey date is before the pre-survey date with a difference of more than 1 day.") #nolint
+```
+
+`There are atleast 262 records many matched records where post survey date is before pre-survey date by atleast 1 day. More background knowledge is needed if these is an error or is an accurate depiction of the data.`
+
+>> `The correct practice is to remove these records from the dataset — if we are measuring growth then this might be misleading`
+
+>> `from this point forward, I will clean for duplicates and treat those as invalid data`
+
+```{r}
+# filter dataframe to include only responses where post-survey date is after pre-survey date #nolint
+
+merged_df <- merged_df %>%
+  arrange(id, desc(RecordedDate.y)) %>%
+  group_by(id) %>%
+  filter(RecordedDate.y >= RecordedDate.x) %>%
+  slice_head(n = 1) %>%
+  ungroup()
+
+# Print the resulting data frame
+head(merged_df)
+nrow(merged_df)
+```
+
+**4.3 check for consistency in the data.**
+Tested by comparing the pre and pre survey matching rate.
+
+```{r}
+#Pre-Post survey matching rate.
+
+# Calculate the matching rate
+matching_rate <- (unique_matched_count / nrow(df_pre)) * 100
+
+# Print the matching rate
+cat("Pre-Post Survey Matching Rate:", matching_rate, "%\n")
+```
+
+```{r}
+# plot completion rate
+
+library(ggplot2)
+library(dplyr)
+# Calculate the complete rate and round it to one decimal place
+complete <- round((matching_rate), 1)
+# data
+df <- data.frame(
+  group = c("Matched", " "),
+  value = c(complete, 100 - complete)
+)
+
+# Small hole
+hsize <- 1
+
+df <- df %>% 
+  mutate(x = hsize)
+
+ggplot(df, aes(x = x, y = value, fill = group)) +
+  geom_col() +
+  geom_text(aes(label = paste0(value, "%")), position = position_stack(vjust = 0.5), color = "#ffffff") +
+  geom_text(aes(label = group, x = hsize -0.79), color = "white", size = 4, hjust = -1.8) +
+  coord_polar(theta = "y") +
+  xlim(c(0.2, hsize + 0.5)) +
+  scale_fill_manual(values = c("Matched" = "#0cb9f8", " " = "#ee7503")) +
+  theme_void() +
+  theme(legend.position = "none",
+        plot.background = element_rect(fill = "#050022"),plot.margin = unit(c(1, 1, 1, 1), "cm"),
+        panel.background = element_rect(fill = "#050022"),
+        axis.text = element_blank(),
+        axis.title = element_blank(),
+        axis.ticks = element_blank(),
+        plot.title = element_text(color = "white", size = 17, lineheight = 5, vjust = -2, hjust = 0.5))+
+        labs(title = "Pre-Post Matching Rate",
+             x = "Hole size",
+             y = "Completion rate (%)",
+             fill = "Group",
+             color = "Group",
+             size = "Group")
+      # +ggsave("/assets/pre_post_match_rate.png", width = 8, height = 6, units = "in")
+
+```
+
+**4.4 Test for validity.** `Instructions is to keep the most recent response from the merged df. The assumption is that the most recent response is the most valid.`
+
+`**Example** post survey date can not be before pre survey date.`
+```python
+
+>>This data is a sample pulled from a larger survey with additional variables that have been removed. When you join the data for analysis based on the ID, you might see that the pre and post RecordedDate’s differ substantially, suggesting that they were not submitted by the same respondent (eg. that there may be duplication among the participant IDs). In practice, we use additional variables to process these accurately, but you can ignore any of these discrepancies for the purposes of this case study and assume any duplicated participant IDs are true duplicates.
+
+```{r}
+duplicate_rows <- merged_df[duplicated(merged_df$id), ]
+
+nrow(duplicate_rows)
+```
+
+```{r}
+#Create a fresh copy of merged data
+df <- data.frame(merged_df)
+```
+
+`Remove duplicates, keeping only the most recent response for each survey (pre and post) in the event of duplicate IDs. Exert the condition that post survey must be after pre survey.`
+
+```{r}
+library(dplyr)
+
+# Arrange the data by 'id' and 'RecordedDate.y' in descending order
+# Then, keep only the first occurrence of each unique 'id' and filter by RecordedDate.y >= RecordedDate.x
+df <- df %>%
+  arrange(id, desc(RecordedDate.y)) %>%
+  group_by(id) %>%
+  filter(RecordedDate.y >= RecordedDate.x) %>%
+  slice_head(n = 1) %>%
+  ungroup()
+
+# Print the resulting data frame
+head(df)
+nrow(df)
+```
+
+**4.5 Quality Control**
+
+```{r}
+#QC for duplicates
+find_duplicate_rows <- function(input_df) {
+  # Find duplicate rows based on the 'id' column
+  duplicates <- input_df[duplicated(input_df$id) | duplicated(input_df$id, fromLast = TRUE), ]
+  
+  return(duplicates)
+}
+
+#QC for pre and post survey dates. Pre survey date should be before post survey date.
+check_recorded_dates_order <- function(input_df) {
+  # Check if RecordedDate.x is after RecordedDate.y
+  dates_order_issue <- input_df[input_df$RecordedDate.x > input_df$RecordedDate.y, ]
+  
+  return(dates_order_issue)
+}
+
+
+# cat("Number of rows with all blank or NA values: ", nrow(find_rows_with_all_blank_na(df)), "\n")
+cat ("Number of duplicate rows: ", nrow(find_duplicate_rows(df)), "\n")
+cat ("Number of rows with pre-post survey issues", nrow(check_recorded_dates_order(df)), "\n")
+```
+
+```{r}
+#QC check for completeness of data. Check subset of columns for blank or NA values
+blank_or_na_rows <- df %>%
+  filter(Q1_a == "" | is.na(Q1_a) |
+         Q2_a == "" | is.na(Q2_a) |
+         Q3_a == "" | is.na(Q3_a) |
+         Q4_a == "" | is.na(Q4_a) |
+         Q1_b == "" | is.na(Q1_b) |
+         Q2_b == "" | is.na(Q2_b) |
+         Q3_b == "" | is.na(Q3_b) |
+         Q4_b == "" | is.na(Q4_b) |
+         Q5 == "" | is.na(Q5) |
+         Q6 == "" | is.na(Q6) |
+         Q7 == "" | is.na(Q7) |
+         Q8 == "" | is.na(Q8))
+
+blank_or_na_rows
+```
+
+# 5. Convert likert scale data to numerical format for analysis. 
+
+```{r}
+head(df)
+```
+
+```{r}
+# get unique values of all columns
+
+unique_values <- lapply(df, unique)
+
+unique_values
+```
+
+`7 point linkert scale used`
+```python
+scale = {
+    'Strongly disagree': 1,
+    'Disagree': 2,
+    'Somewhat disagree': 3,
+    'Neither agree nor disagree': 4,
+    'Somewhat agree': 5,
+    'Agree': 6,
+    'Strongly agree': 7
+}
+```
+
+```{r}
+library(dplyr)
+
+# Define a function to map responses to numerical values
+map_responses <- function(response) {
+  mapping <- c('Strongly disagree' = 1, # nolint
+               'Disagree' = 2, # nolint
+               'Somewhat disagree' = 3,
+               'Neither agree nor disagree' = 4,
+               'Somewhat agree' = 5,
+               'Agree' = 6,
+               'Strongly agree' = 7)
+  return(mapping[response])
+}
+
+# Apply the mapping function to the specified columns
+df <- df %>%
+  mutate(across(c(Q1_a,
+                Q2_a,
+                Q3_a,
+                Q4_a,
+                Q1_b,
+                Q2_b,
+                Q3_b,
+                Q4_b,
+                Q5,
+                Q6,
+                Q7),
+                map_responses))
+```
+
+```{r}
+head(df)
+```
+
+```{r}
+# write df to csv
+```
+
+```{r}
+# write df to csv. Replace path with your file path
+ write.csv(df, "/data_output/final_df_numeric.csv", row.names = FALSE)
+```
 

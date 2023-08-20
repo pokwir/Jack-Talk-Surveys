@@ -1,0 +1,305 @@
+---
+title: "Evaluation Lead case study — cleaning and analyzing survey data"
+output: 
+  html_document:
+    code_folding: show
+    theme:
+      bg: "#050022"
+      fg: rgb(237, 237, 237)
+      primary: rgb(241, 89, 35) 
+      secondary: rgb(40, 169, 225)
+      base_font:
+        google: 'PT Sans'
+      heading_font:
+        google: 'Work Sans'
+---
+
+```{r setup, include=FALSE}
+if (requireNamespace("thematic")) 
+  thematic::thematic_rmd(font = "auto")
+```
+
+<hr style="border-color:rgb(40, 169, 225);">
+<br>
+
+## Requirements 
+<br>
+
+To effectively reproduce the process, the following packages are required in R:\
+- [tidyverse](https://www.tidyverse.org/) — ```install.packages("tidyverse")```\
+- [dplyr](https://dplyr.tidyverse.org/) — ```install.packages("dplyr")```\
+- [ggplot2](https://ggplot2.tidyverse.org/) — ```install.packages("ggplot2")```\
+- [lubridate](https://cran.r-project.org/web/packages/lubridate/) — ```install.packages("lubridate")```\
+- [readr](https://readr.tidyverse.org/) — ```install.packages("readr")```\
+- [knitr](https://anaconda.org/conda-forge/r-knitr) ```conda install -c conda-forge r-knitr```\
+- [rmarkdown](https://rmarkdown.rstudio.com/)\
+
+If you are working in visual studio code, you need to install the following extensions:\
+- [Language Server](https://code.visualstudio.com/docs/languages/r) — ```install.packages("languageserver")```\
+- [R Lang](https://www.r-project.org/)
+
+If you are working in visual studio code and want to use the jupyter notebook version of the codes, you need to install the following extensions in your environment:\
+- [R Kernel](https://anaconda.org/r/r-irkernel) — ```conda install -c r r-irkernel```
+<hr style="border-color:rgb(40, 169, 225);">
+<br>
+<br>
+
+## Introduction 
+The evaluation lead case study constitutes a comprehensive skills assessment endeavor aimed at quantifying candidates' proficiency in various domains, including:
+
+- Proficiency in quantitative and qualitative data collection and analysis, with a particular emphasis on quantitative aptitude.
+- Competence in conducting data analysis using R and other statistical programming languages.
+- Proficiency in data visualization techniques using R and other statistical programming languages.
+- Skill in monitoring data quality, carrying out data cleaning, coding, analysis, and succinctly reporting findings.
+- Ability to effectively communicate results by crafting suitable information products.
+
+The foundational data for this case study originates from a sample extracted from pre and post-surveys administered to a youth 
+audience after they attended Jack Talks—a series of mental health presentations led by young individuals for their peers. 
+These presentations leverage personal narratives and mental health education to inspire, engage, educate, and empower young audiences. 
+The pre and post-surveys are instruments to gauge the impact of the Jack Talks presentations on the audience, providing a comprehensive framework for evaluation and analysis.
+<br>
+<br>
+
+## Goal
+The core objective of this project is to meticulously clean and conduct comprehensive analyses on both the pre and post-survey datasets. 
+This analytical approach closely follows the provided instructions, establishing a succinct and replicable framework that allows for future scalability.
+<br>
+<br>
+
+## Data
+The project's data can be accessed within the <span style="color:rgb(22, 199, 178);">"datasets"</span> directory. 
+This data is structured as two separate CSV files: <span style="color:rgb(22, 199, 178);">"CASE STUDY - Livestream pre FY23"</span> and <span style="color:rgb(22, 199, 178);">"CASE STUDY - Livestream post FY23"</span>. 
+Additionally, candidates have access to the data through the provided package. It's important to note that the datasets are not hosted on GitHub due to the sensitivity of the data.
+<br>
+<br>
+
+## Process
+The project workflow encompasses the following sequential steps:\
+
+1. Import the data into the R environment.\
+2. Perform individualized data cleaning for each dataset.\
+3. Merge the cleaned datasets into a unified dataset.\
+4. Conduct comprehensive data analysis.\
+5. Present the results of the investigation.\
+
+For a detailed breakdown of each of these processes, you can refer to the provided instructions. These instructions are also accessible within the <span style="color:rgb(22, 199, 178);">"instructions"</span> folder.
+
+In addition, the codebooks — <span style="color:rgb(22, 199, 178);">"data_cleaning"</span> and <span style="color:rgb(22, 199, 178);">"data_analysis"</span> serve as comprehensive documentation of the steps and methodologies employed throughout the project. 
+They feature R code snippets and descriptive docstrings for seamless comprehension and traceability. Each code file comes in two formats — an R-markdown file and a Jupyter notebook file (you will need an IRkernel to run R codes in Jupyter notebook).
+<br>
+<br>
+
+## Deliverables
+The deliverables encompassed by this project include:
+
+- A <span style="color:rgb(22, 199, 178);">"report document"</span> (This Markdown document)
+- A spreadsheet of the <span style="color:rgb(22, 199, 178);">"cleaned data set"</span> in the form of a CSV file. You can locate this file in the <span style="color:rgb(22, 199, 178);">`data_output`</span> directory, named <span style="color:rgb(22, 199, 178);">"final_df_numeric.csv"</span>
+- A <span style="color:rgb(22, 199, 178);">"coding script"</span> including annotations for each step in the process. The R Markdown versions are labeled <span style="color:rgb(22, 199, 178);">"data_cleaning.rmd"</span> and <span style="color:rgb(22, 199, 178);">"data_analysis.rmd"</span>. Additionally, IPython notebook versions are available in the <span style="color:rgb(22, 199, 178);">`code`</span> folder.
+- Results for <span style="color:rgb(22, 199, 178);">"requirements 5 and 6"</span>, along with additional descriptions or notes essential for interpreting the project. These can be located in the <span style="color:rgb(22, 199, 178);">`data_output`</span> directory as <span style="color:rgb(22, 199, 178);">"qn_5.csv"</span> and <span style="color:rgb(22, 199, 178);">"qn_6.csv"</span>. This report provides comprehensive illustrations of these results, including data visuals for enhanced interpretability.<br>
+<br>
+<br>
+
+### Step 1: Data cleaning
+
+The process and code for data cleaning are meticulously documented within the <span style="color:rgb(22, 199, 178);">data_cleaning.rmd</span> / <span style="color:rgb(22, 199, 178);">data_cleaning.ipynb</span> files within the <span style="color:rgb(22, 199, 178);">code</span> directory.
+The executed data cleaning process was designed to align the data with the seven distinct dimensions of data quality, as delineated below:
+
+- <span style="color:rgb(22, 199, 178);">Completeness</span> - Reflects the extent to which all records possess anticipated data.
+- <span style="color:rgb(22, 199, 178);">Uniqueness</span> - Pertains to the degree of non-duplication among records within the dataset.
+- <span style="color:rgb(22, 199, 178);">Timeliness</span> - Conveys the degree of data's currency and up-to-dateness.
+- <span style="color:rgb(22, 199, 178);">Validity</span> - Quantifies the extent to which dataset records conform to valid data types.
+- <span style="color:rgb(22, 199, 178);">Accuracy</span> - Measures data's correctness and its fidelity in representing the truth.
+- <span style="color:rgb(22, 199, 178);">Consistency</span> - Defines the allowable deviation between two datasets.
+- <span style="color:rgb(22, 199, 178);">Relevance</span> - Gauges the data's appropriateness for the required analysis.
+<br>
+<br>
+
+#### 1.1 Asserting test for completeness, uniqueness, timeliness, and relevance. 
+Quality checks were systematically conducted and data was cleansed in a stepwise manner. 
+As I progressed through the steps, I noticed a reduction in the number of quality violations. 
+This observation suggests that the preceding steps effectively addressed most of the violations.
+After each cleaning iteration, quality control checks were exerted to ensure compliance.
+The cleaned datasets were exported to csvs that can be found in the <span style="color:rgb(22, 199, 178);">data_output</span> folder. 
+The results are depicted in the table below. 
+
+
+| Quality Dimension | Definition | Pre Surveys | Post Surveys |
+|-------------------|------------|-------------|--------------|
+| Completeness      | Degree to which all records have data populated when expected. | There were 2878 marked as ‘incomplete,’ and an additional 582 responses with at least one ‘blank’ or ‘NA’ value in the subset columns (Q1 - Q4). | There were 3040 marked as ‘incomplete,’ and an additional 298 responses with at least one ‘blank’ or ‘NA’ value in the subset columns (Q1 - Q8). |
+| Uniqueness        | Degree to which the records in a dataset are not duplicated. | There were 4 duplicate records. That is a 0.05% duplication rate. | There was only one duplicate record. This represents a 0.06% duplication rate. |
+| Timeliness        | Degree to which the data is up to date. | Survey time period was between 2022-09-21 13:14:00 and 2023-06-25 15:19:00. This is timely. | Survey time period was between 2022-09-21 13:55:00 and 2023-06-25 15:20:00. This is timely. |
+| Relevance         | Degree to which the data is suitable for analysis required. | The data is suitable for the analysis required. | The data is suitable for the analysis required. |
+
+<br>
+<span style="color:rgb(40, 169, 225); font-weight:bold; text-decoration:underline;">Observations</span>
+<br>
+
+- After filtering out incomplete responses (2,878 incomplete and 582 with atleast 1 blank or NA), the pre-survey dataset consisted of 7,465 completed responses, indicating a completion rate of 68.3%. 
+The pre-survey dataset contained a total of 10,925 records. 
+- The post survey contained a total of 6,856 records. After removing incomplete responses, the dataset comprised 3,518 valid responses, signifying a completion rate of 51.3%.\
+A visual depiction can be seen below.
+<br>
+![image.png](/Users/patrickokwir/Desktop/Lighthouse-data-notes/Jack-Talk-Surveys/assets/pre_post_rate.png)
+
+#### 1.2 Merging and exerting tests for validity, accuracy, and consistency.
+The two datasets were merged for each same respondent using the <span style="color:rgb(22, 199, 178);">"id"</span> columns.
+The validity, accuracy, and consistency tests were systematically conducted. Data was cleaned using appropiate methods to ensure complaince. 
+The outcome of the tests followed almost a simmilar pattern from the previous step.
+After each test-cleaning step, a quality control check was performed to ensure the data complies with the standards required.
+The results are depicted in the table below.
+
+
+| Quality Dimension | Definition | Result     |
+|-------------------|------------|------------|
+| Validity | Degree to which the records in a dataset are valid. | The quality assertion here is that post survey cannot be taken before the pre survey. There are at least 262 matching surveys where post-survey was taken before the pre survey by at least 1 day. |
+| Accuracy | Degree to which the data is correct and represents the truth. | The assumption is that the data is correct and represents the truth. Further domain knowledge is required to validate accuracy. |
+| Consistency | A threshold for how much difference there can be between two datasets. | There was a total of 6,978 records after merging, with only 2,606 matching records. 4,372 records failed this test. |
+
+<br>
+<span style="color:rgb(40, 169, 225); font-weight:bold; text-decoration:underline;">Observations</span>
+<br>
+
+- A minimum of 262 instances of matching surveys have been observed, in which the post-survey responses were recorded prior to the pre-survey responses by a margin of at least one day. 
+These were removed from the final dataset before analysis of Q6. The final dataset had a total of 2325 records.
+```yaml
+|   RecordedDate.y(post) |  RecordedDate.x (pre) | Matched |    id      |
+|------------------------|-----------------------|---------|------------|
+| 2023-03-07 16:20:00    | 2023-05-15 14:05:00   | matched |  A_A_01_A  |
+| 2023-05-24 10:26:00    | 2023-05-30 08:53:00   | matched |  A_A_04_B  |
+| 2023-03-07 16:21:00    | 2023-05-03 15:22:00   | matched |  A_A_04_M  |
+| 2023-04-24 17:01:00    | 2023-05-18 10:39:00   | matched |  A_A_04_P  |
+| 2023-05-04 13:13:00    | 2023-05-18 10:37:00   | matched |  A_A_07_8  |
+| 2023-05-18 11:19:00    | 2023-05-25 08:58:00   | matched |  A_A_07_R  |
+| 2023-02-13 14:58:00    | 2023-05-15 14:05:00   | matched |  A_A_07_S  |
+| 2023-05-03 12:55:00    | 2023-05-30 09:28:00   | matched |  A_A_11_H  |
+| 2023-04-24 17:02:00    | 2023-05-24 10:55:00   | matched |  A_A_12_A  |
+| 2023-05-24 08:39:00    | 2023-05-26 10:17:00   | matched |  A_A_12_F  |
+
+There are 262 row(s) where the post survey date is before the pre-survey date with a difference of more than 1 day.
+```
+- The pre-post matching rate stood at 41%, denoting that 2,606 matches were identified between the pre-survey dataset (3,226 records) and the post-survey dataset (6,358 records).
+A visual depiction can be seen below.
+
+![](/Users/patrickokwir/Desktop/Lighthouse-data-notes/Jack-Talk-Surveys/assets/pre-post-match.png)
+<br>
+<br>
+
+#### 1.3 Encoding categorical varriables to numerical. 
+
+A tailored function named <span style="color:rgb(22, 199, 178);">map_response</span> was used to address the specific task of encoding categorical variables into numerical representations. 
+This step served as a quality control measure aimed at identifying potential misspelled values that might not be detected by a built-in function. 
+It's notable that the variable Q8 was excluded from this process due to its pre-existing numerical nature. 
+It's worth highlighting that this procedure was also used to ensure the accuracy and integrity of the data encoding process, especially in cases where misspelled values could lead to inaccuracies.
+
+
+```python
+#7-point likert scale used
+scale = {
+    'Strongly disagree': 1,
+    'Disagree': 2,
+    'Somewhat disagree': 3,
+    'Neither agree nor disagree': 4,
+    'Somewhat agree': 5,
+    'Agree': 6,
+    'Strongly agree': 7
+}
+```
+<br>
+<span style="color:rgb(40, 169, 225); font-weight:bold; text-decoration:underline;">Final observations on data cleaning</span>
+<br>
+- The ultimate dataset comprised a cumulative count of 2,325 records.\
+- De-duplicated dataframes of the cleaned pre and post-survey (for Q5 analysis) and merged datasets were exported as CSV files. These files are accessible in the <span style="color:rgb(22, 199, 178);">data_output</span> directory.
+<br>
+<br>
+
+### Step 2: Data analysis
+The procedural details pertaining to data analysis are expounded upon within the <span style="color:rgb(22, 199, 178);">data_analysis</span> rmarkdown or ipynb files. 
+This comprehensive reference is accessible within the <span style="color:rgb(22, 199, 178);">code</span> folder. 
+The analysis itself was executed on the refined dataset, wherein diligent data quality control measures were applied in preparation for each analytical procedure. 
+This robust approach ensures the conformity of the dataset with the prerequisites for rigorous analysis.
+
+Following this preparatory phase, the subsequent sections elucidate the methodological aspects and consequential observations for each individual question.
+<br>
+<br>
+
+#####  Question 5. Summarize the data for each of Q1-8 by reporting the mean response for each question. Please report the summary statistic for anyone who completed either the pre or post survey.
+<br>
+
+The stipulation necessitates the distinct treatment of pre and post surveys in the context of summarizing mean responses for individual questions. 
+This stems from the inherent distinct nature between the pre and post survey datasets.To execute this analytical procedure, I engage the original pre and post survey data that have undergone cleansing and duplicate removal.
+<br>
+
+The purpose of this analysis is to compute the mean response value for each individual question. 
+>> The result below represents the mean response values derived from the pre-survey dataset.
+<br>
+
+```yaml
+| Survey |  mean_Q1 |  mean_Q2 |  mean_Q3 |  mean_Q4 |  mean_Q5 |  mean_Q6 |  mean_Q7 |  mean_Q8 |
+|:-------|---------:|---------:|---------:|---------:|---------:|---------:|---------:|---------:|
+| Pre    | 5.013998 | 4.332652 | 5.046870 | 4.699906 |       NA |       NA |       NA |       NA |
+| Post   | 5.229696 | 4.681339 | 5.234346 | 5.035338 | 5.107254 | 5.110043 | 4.980161 | 6.946683 |
+
+```
+<br>
+![](/Users/patrickokwir/Desktop/Lighthouse-data-notes/Jack-Talk-Surveys/assets/pre-post-mean-summary.png)
+Comparing the mean responses, it's apparent that the means for Q1 to Q4 have slightly increased from the pre-survey to the post-survey. 
+There is a general tendency towards 'more agreement' or positive sentiment among respondents at post.
+
+Observing the specific means for pre surveys, it's evident that participants' responses vary across the questions. 
+For instance, in Q1, the mean response is approximately 5.014, implying 'somewhat agreement' or a positive sentiment among respondents. 
+In contrast, Q2 exhibits a lower mean response of 4.33, indicating a somewhat less uniform consensus on that particular question. 
+A similar pattern can be observed for Q3 and Q4, with mean response values of approximately 5.047 and 4.700, respectively. But Q4 lends towards a positive sentiment than Q2.
+
+At post, looking at Q1 and Q3 the mean responses of approximately 5.23 reflects a consistent sentiment of 'somewhat agreement' or positivity among respondents which alignins with the pre-survey pattern. 
+However, Q2 and Q4 deviate slightly from the pre-survey trend, with mean response values of around 4.68 and 5.04, respectively.
+
+Beyond Q4, the responses reveal distinct trends. In Q5 and Q6, with mean responses of 5.11, participants show a sentiment of 'somewhat agreement'. 
+Q7 mean response score of 4.980, underscore a positive among participants. 
+
+Q8 mean response of 6.95 signifies strong sentiment — a high likelihood that participants would recommend Jack Talks to their friends.
+<br>
+<br>
+
+#####  Question 6. For individuals with both a pre and post response, compare the individual average change between the pre and post survey for each of Q1-4. Quantify the individual average change and report whether the difference between means is statistically significant. 
+<br>
+
+The purpose of this analysis is to compare the average change between the pre and post survey for Q1 to Q4 and test weather that change is significant. 
+The dataset used for this analysis is the combined, cleaned, unduplicated pre and post dataset. 
+
+To test for significance, I used the [**Wilcoxon signed-rank test.**](https://www.statisticshowto.com/probability-and-statistics/statistics-definitions/wilcoxon-signed-rank-test/)
+
+<span style="color:rgb(22, 199, 178); font-weight:bold">The Wilcoxon signed-rank test is a non-parametric statistical test that is appropriate for comparing paired data when the distribution of the data may not be normal or when the assumptions of parametric tests like the t-test are not met.</span> In this case, we are comparing the individual average change between the pre and post surveys for each question (Q1-4). Here are the reasons why I chose Wilcoxon signed-rank test as a suitable choice:
+
+- <span style="color:rgb(22, 199, 178);">Paired Data:</span> The Wilcoxon signed-rank test is designed for paired data, where each individual has two related measurements (pre and post survey).
+- <span style="color:rgb(22, 199, 178);">Non-Normal Distribution:</span> Data is not normally distributed (non-parametric).
+- <span style="color:rgb(22, 199, 178);">Ordinal Data:</span> Our data has ordinal response categories (Likert scale), the Wilcoxon test is appropriate because it does not require interval-level data.
+- <span style="color:rgb(22, 199, 178);">Sensitive to Shifts:</span> The Wilcoxon signed-rank test is sensitive to detecting shifts in the distribution, making it suitable for detecting changes in responses.
+
+The wilcoxon signed-rank test is found in R under the stats library.\
+The results of the analysis and test are shown below.  
+
+```yaml
+| mean_change_Q1 | mean_change_Q2 | mean_change_Q3 | mean_change_Q4 | wilcox_Q1_p-val | wilcox_Q2_p-val | wilcox_Q3_p-val | wilcox_Q4_p-val |
+|:---------------|:---------------|:---------------|:---------------|:----------------|:----------------|:----------------|:----------------|
+| 0.07053763     | 0.2305376      | 0.1221505      | 0.3195699      | 0.001272983     | 3.802891e-23    | 2.457798e-08    | 1.39444e-45     |
+
+```
+
+![](/Users/patrickokwir/Desktop/Lighthouse-data-notes/Jack-Talk-Surveys/assets/pre-post-change-presentation.png)
+<br>
+<span style="color:rgb(40, 169, 225); font-weight:bold; text-decoration:underline;">Observations</span>
+<br>
+
+In the aggregate analysis, statistically significant distinctions emerge in the average change in responses for each question between the pre and post surveys. 
+The notably diminutive p-values underscore the improbability of these disparities arising by random variability, signifying substantial shifts in responses.
+
+Specifically, a notable positive and statistically significant change in mean participants' responses is observed across all four questions (Q1, Q2, Q3, and Q4) between the pre and post surveys. 
+Among these, Q4 registers the most pronounced alteration in responses, accompanied by the lowest p-value, emphasizing both the substantiality of the observed change and its statistical significance.
+<br>
+<br>
+<hr style="border-color:rgb(40, 169, 225);">
+## Future work
+<br>
+<span style="color:rgb(22, 199, 178);">Delving into Ordinal Regression:</span> Investigate the correlation between predictor variables (change in Q1 to Q4 due to the availability of pre and post-pairs), Q5 to Q7, and the ordinal response Q8 (indicating whether participants would recommend the program). This analysis will offer valuable insights into the influential aspects of the talks that can potentially trigger a snowball effect.
+<br>
+<br>
